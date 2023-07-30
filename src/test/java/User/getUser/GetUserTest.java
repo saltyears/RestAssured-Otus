@@ -45,7 +45,7 @@ public class GetUserTest extends UserBaseTest {
         .body(JsonSchemaValidator.matchesJsonSchemaInClasspath("schema/CreateUser.json"));
 }
 
-    //  3. Поиск юзера, созданного ранее
+//  3. Поиск юзера, созданного ранее
     @Test
     public void getUser3() {
 
