@@ -1,5 +1,6 @@
 package services;
 
+import dto.GetUserDTO;
 import dto.UserDTO;
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
@@ -30,5 +31,14 @@ public class UserApi {
                     .post()
                .then()
                .log().all();
+    }
+    public ValidatableResponse getUser(String username) {
+        return given(spec)
+            .pathParam("username", username)
+            .log().all()
+            .when()
+            .get("/{username}")
+            .then()
+            .log().all();
     }
 }
