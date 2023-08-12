@@ -1,13 +1,27 @@
 package User.createUser;
 
-import User.UserBaseTest;
 import dto.UserDTO;
 import io.restassured.module.jsv.JsonSchemaValidator;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import services.UserApi;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
 
-public class CreateUserTest extends UserBaseTest {
+public class CreateUserTest {
+    protected UserApi userApi = new UserApi();
+    private final List<String> createdUsers = new ArrayList<>();
+
+    @BeforeEach
+    public void clearUser() {
+        createdUsers.clear();
+    }
+    @AfterEach
+    public void deleteUser() {
+        createdUsers.forEach(username -> userApi.deleteUser(username).statusCode(200));
+    }
 
 //  1. Тест на добавление юзера
     @Test
@@ -23,7 +37,6 @@ public class CreateUserTest extends UserBaseTest {
             .phone("12345")
             .userStatus(1L)
                 .build();
-        userApi.createUser(userDTO);
 
         userApi.createUser(userDTO)
             .statusCode(200)
@@ -32,22 +45,37 @@ public class CreateUserTest extends UserBaseTest {
             .body("message", equalTo("100500"))
             .body(JsonSchemaValidator.matchesJsonSchemaInClasspath("schema/CreateUser.json"));
 
+        String username = "Frank";
+
+        userApi.getUser(username)
+            .statusCode(200)
+            .body("id", equalTo(100500))
+            .body("username", equalTo("Frank"))
+            .body("firstName", equalTo("Frank"))
+            .body("lastName", equalTo("Frank"))
+            .body("email", equalTo("frank@yy.yy"))
+            .body("password", equalTo("12345"))
+            .body("phone", equalTo("12345"))
+            .body("userStatus", equalTo(1))
+            .body(JsonSchemaValidator.matchesJsonSchemaInClasspath("schema/GetUser.json"));
+
+        createdUsers.add(username);
+
     }
-//  1. Тест на добавление юзера
+//  2. Тест на добавление юзера  кириллицей
     @Test
-    public void createUser2() {
+    public void createUserCyrillic() {
 
         UserDTO userDTO = UserDTO.builder()
             .id(3000L)
-            .username("Frank3")
-            .lastName("FrankLastName")
-            .firstName("FrankFirstName")
-            .email("frank@yy.yy")
-            .password("12345pass")
+            .username("Франк")
+            .lastName("Синатра")
+            .firstName("Фрэнк")
+            .email("frank123@yy.yy")
+            .password("12345pass;%:")
             .phone("12345")
             .userStatus(1L)
             .build();
-        userApi.createUser(userDTO);
 
         userApi.createUser(userDTO)
             .statusCode(200)
@@ -56,9 +84,24 @@ public class CreateUserTest extends UserBaseTest {
             .body("message", equalTo("3000"))
             .body(JsonSchemaValidator.matchesJsonSchemaInClasspath("schema/CreateUser.json"));
 
+        String username = "Франк";
+
+        userApi.getUser(username)
+            .statusCode(200)
+            .body("id", equalTo(3000))
+            .body("username", equalTo("Франк"))
+            .body("firstName", equalTo("Фрэнк"))
+            .body("lastName", equalTo("Синатра"))
+            .body("email", equalTo("frank123@yy.yy"))
+            .body("password", equalTo("12345pass;%:"))
+            .body("phone", equalTo("12345"))
+            .body("userStatus", equalTo(1))
+            .body(JsonSchemaValidator.matchesJsonSchemaInClasspath("schema/GetUser.json"));
+
+        createdUsers.add(username);
     }
 
-//  2. Тест на добавление юзера пустые поля
+//  3. Тест на добавление юзера пустые поля
     @Test
     public void createUserEmpty() {
 
@@ -80,6 +123,7 @@ public class CreateUserTest extends UserBaseTest {
             .body("type", equalTo("unknown"))
             .body("message", equalTo("10"))
             .body(JsonSchemaValidator.matchesJsonSchemaInClasspath("schema/CreateUser.json"));
+
 
     }
 }
